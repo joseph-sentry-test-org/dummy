@@ -1,0 +1,16 @@
+name: Integration
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Spin up services and run integration suite
+        run: |
+          echo "Booting integration environment..."
+          sleep 90
+          echo "ERROR: could not connect to database at db:5432 (connection refused)"
+          exit 1

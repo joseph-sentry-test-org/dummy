@@ -1,0 +1,15 @@
+name: Lint
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check formatting
+        run: |
+          echo "Running formatting check..."
+          echo "ERROR: config/settings.yaml has trailing whitespace on line 12"
+          exit 1
