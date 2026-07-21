@@ -59,11 +59,12 @@ def compute_velocity(project_id: int, completed_tasks: list[dict]) -> dict:
         total_cycle_days += cycle_time.days
 
     avg_cycle = total_cycle_days / len(completed_tasks)
+    velocity_per_week = round(total_points / (total_cycle_days / 7), 2) if total_cycle_days > 0 else 0
     return {
         "total_points": total_points,
         "tasks_completed": len(completed_tasks),
         "avg_cycle_time_days": round(avg_cycle, 1),
-        "velocity_per_week": round(total_points / (total_cycle_days / 7), 2),
+        "velocity_per_week": velocity_per_week,
     }
 
 
