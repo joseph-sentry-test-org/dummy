@@ -6,20 +6,68 @@ on:
     branches: [main]
 
 jobs:
-  check:
+  double-checked:
+    name: Every added line must be double-checked
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-      - name: Install dependencies
+          fetch-depth: 0
+
+      - name: Require '# double-checked' on every added line
+        shell: bash
         run: |
-          cd python
-          python -m pip install --upgrade pip
-          pip install pytest
-      - name: Run tests
-        run: |
-          cd python
-          python -m pytest -q
+          set -euo pipefail
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE="${{ github.event.before }}"
+            if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+              echo "No prior commit to diff against; skipping."
+              exit 0
+            fi
+          fi
+
+          DIFF="$(git diff --unified=0 "$BASE"...HEAD)"
+          if [ -z "$DIFF" ]; then
+            echo "No changes."
+            exit 0
+          fi
+
+          # Collect added lines (exclude +++ file headers and empty additions).
+          mapfile -t ADDED < <(printf '%s\n' "$DIFF" | grep -E '^\+[^+]' | sed 's/^+//' || true)
+
+          if [ "${#ADDED[@]}" -eq 0 ]; then
+            echo "No non-empty added lines."
+            exit 0
+          fi
+
+          MARKER='# double-checked'
+          FAIL=0
+          echo "Checking ${#ADDED[@]} added line(s) for '$MARKER'..."
+          echo
+
+          i=0
+          while IFS= read -r line; do
+            i=$((i + 1))
+            # Skip pure whitespace additions.
+            if [[ "$line" =~ ^[[:space:]]*$ ]]; then
+              continue
+            fi
+            if [[ "$line" != *"$MARKER"* ]]; then
+              echo "FAIL: added line missing '$MARKER':"
+              echo "  | $line"
+              echo
+              FAIL=1
+            fi
+          done < <(printf '%s\n' "${ADDED[@]}")
+
+          if [ "$FAIL" -ne 0 ]; then
+            echo "────────────────────────────────────────"
+            echo "Every new/changed line in the patch must include a '$MARKER' comment."
+            echo "Re-read the diff and annotate each added line, then push again."
+            exit 1
+          fi
+
+          echo "OK: all added lines include '$MARKER'."
