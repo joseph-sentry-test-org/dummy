@@ -1,0 +1,17 @@
+name: Draft Skip Probe
+
+# Intentionally omits ready_for_review so undraft via API would NOT re-run this.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  only-when-not-draft:
+    name: Real checks (skipped on draft)
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pretend to run tests
+        run: |
+          echo "This only runs on non-draft PRs"
+          sleep 2
