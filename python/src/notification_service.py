@@ -12,8 +12,6 @@ def _render_template(template: str, context: dict) -> str:
 def send_notification(user_id: int, template: str, context: dict) -> dict:
     """Send a notification to a user by rendering a template."""
     user = USERS.get(user_id)
-    if user is None:
-        raise ValueError(f"User {user_id} not found")
     ctx = {**context, "recipient_name": user.first_name + " " + user.last_name, "email": user.email}
     body = _render_template(template, ctx)
     return {"to": user.email, "body": body, "status": "sent"}
@@ -26,7 +24,7 @@ def notify_task_assignees(task_ids: list[int], template: str, context: dict) -> 
     results = []
     for task_id in task_ids:
         task = TASKS[task_id]
-        if task.assignee_id is not None and task.assignee_id in USERS:
+        if task.assignee_id is not None:
             result = send_notification(task.assignee_id, template, context)
             results.append(result)
     return results
