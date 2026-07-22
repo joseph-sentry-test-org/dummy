@@ -1,0 +1,3 @@
+# Probe: auto-request CODEOWNERS on undraft
+* @joseph-sentry
+python/ @joseph-sentry
