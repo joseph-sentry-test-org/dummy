@@ -71,3 +71,5 @@ jobs:
           fi
 
           echo "OK: all added lines include '$MARKER'."
+
+# probe workflow drift 20260724T174248Z
