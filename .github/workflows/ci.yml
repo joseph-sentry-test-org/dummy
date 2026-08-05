@@ -16,7 +16,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Require '# double-checked' on every added line
+      - name: Require staged annotations on every added line
         shell: bash
         run: |
           set -euo pipefail
@@ -45,33 +45,51 @@ jobs:
             exit 0
           fi
 
-          MARKER='# double-checked'
-          FAIL=0
-          echo "Checking ${#ADDED[@]} added line(s) for '$MARKER'..."
+          # Gate 1 must pass before gate 2 is even disclosed. A patch therefore
+          # needs at least two rounds of fixes to go green.
+          check_marker() {
+            local marker="$1"
+            local fail=0
+            local line
+            while IFS= read -r line; do
+              if [[ "$line" =~ ^[[:space:]]*$ ]]; then
+                continue
+              fi
+              if [[ "$line" != *"$marker"* ]]; then
+                echo "FAIL: added line missing '$marker':"
+                echo "  | $line"
+                echo
+                fail=1
+              fi
+            done < <(printf '%s\n' "${ADDED[@]}")
+            return "$fail"
+          }
+
+          echo "Checking ${#ADDED[@]} added line(s)..."
           echo
 
-          i=0
-          while IFS= read -r line; do
-            i=$((i + 1))
-            # Skip pure whitespace additions.
-            if [[ "$line" =~ ^[[:space:]]*$ ]]; then
-              continue
-            fi
-            if [[ "$line" != *"$MARKER"* ]]; then
-              echo "FAIL: added line missing '$MARKER':"
-              echo "  | $line"
-              echo
-              FAIL=1
-            fi
-          done < <(printf '%s\n' "${ADDED[@]}")
-
-          if [ "$FAIL" -ne 0 ]; then
+          echo "── Gate 1: '# double-checked' ──"
+          if ! check_marker '# double-checked'; then
             echo "────────────────────────────────────────"
-            echo "Every new/changed line in the patch must include a '$MARKER' comment."
-            echo "Re-read the diff and annotate each added line, then push again."
+            echo "Every new/changed line in the patch must include a '# double-checked' comment."
+            echo "Re-read the diff, annotate each added line, then push again."
+            exit 1
+          fi
+          echo "OK: gate 1 satisfied."
+          echo
+
+          echo "── Gate 2: '# triple-checked' ──"
+          echo "Gate 1 passed, so gate 2 now applies: double-checking is not enough."
+          echo "Every added line must ALSO carry a '# triple-checked' marker, e.g.:"
+          echo "    foo = bar()  # double-checked # triple-checked"
+          echo
+          if ! check_marker '# triple-checked'; then
+            echo "────────────────────────────────────────"
+            echo "Every new/changed line must include BOTH '# double-checked' and '# triple-checked'."
+            echo "Append the second marker to each added line, then push again."
             exit 1
           fi
 
-          echo "OK: all added lines include '$MARKER'."
+          echo "OK: all added lines are double- and triple-checked."
 
 # probe workflow drift 20260724T174248Z
