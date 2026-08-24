@@ -1,0 +1,25 @@
+name: Close all PRs
+
+# Testing repo: close every open PR once a day.
+on:
+  schedule:
+    - cron: "0 9 * * *"  # 09:00 UTC daily
+  workflow_dispatch:      # allow manual runs too
+
+permissions:
+  pull-requests: write
+
+jobs:
+  close-prs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close all open PRs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 --json number \
+            --jq '.[].number' | while read -r pr; do
+              echo "Closing PR #$pr"
+              gh pr close "$pr" --repo "$GITHUB_REPOSITORY" \
+                --comment "Auto-closed by the daily close-all-prs workflow (testing repo)."
+            done
