@@ -3,6 +3,10 @@ from src.models import User
 USERS: dict[int, User] = {}
 
 
+class UserNotFoundError(Exception):
+    """Raised when a user with the given ID does not exist."""
+
+
 def create_user(id: int, first_name: str, last_name: str, email: str) -> User:
     user = User(id=id, first_name=first_name, last_name=last_name, email=email)
     USERS[id] = user
@@ -10,6 +14,8 @@ def create_user(id: int, first_name: str, last_name: str, email: str) -> User:
 
 
 def get_user(user_id: int) -> User:
+    if user_id not in USERS:
+        raise UserNotFoundError(f"User {user_id} not found")
     return USERS[user_id]
 
 
