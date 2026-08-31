@@ -23,3 +23,11 @@ def test_notify_task_assignees_handles_missing_user():
     TASKS[1] = Task(id=1, title="Ship it", project_id=1, assignee_id=999)
     results = notify_task_assignees([1], "Hi {{recipient_name}}", {})
     assert results == []
+
+
+def test_send_notification_raises_for_missing_user():
+    # send_notification should raise ValueError when the user_id doesn't exist,
+    # not a cryptic KeyError or AttributeError.
+    import pytest
+    with pytest.raises(ValueError, match="User 999 not found"):
+        send_notification(999, "Hello!", {})

@@ -11,12 +11,12 @@ def _render_template(template: str, context: dict) -> str:
 
 def send_notification(user_id: int, template: str, context: dict) -> dict:
     """Send a notification to a user by rendering a template."""
-    user = USERS.get(user_id)
-    if user is None:
+    missing_user = USERS.get(user_id)
+    if missing_user is None:
         raise ValueError(f"User {user_id} not found")
-    ctx = {**context, "recipient_name": user.first_name + " " + user.last_name, "email": user.email}
+    ctx = {**context, "recipient_name": missing_user.first_name + " " + missing_user.last_name, "email": missing_user.email}
     body = _render_template(template, ctx)
-    return {"to": user.email, "body": body, "status": "sent"}
+    return {"to": missing_user.email, "body": body, "status": "sent"}
 
 
 def notify_task_assignees(task_ids: list[int], template: str, context: dict) -> list[dict]:
