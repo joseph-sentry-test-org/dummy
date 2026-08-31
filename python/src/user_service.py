@@ -10,6 +10,8 @@ def create_user(id: int, first_name: str, last_name: str, email: str) -> User:
 
 
 def get_user(user_id: int) -> User:
+    if user_id not in USERS:
+        raise ValueError(f"User {user_id} not found")
     return USERS[user_id]
 
 
