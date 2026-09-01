@@ -1,4 +1,4 @@
-from src.models import User
+from src.models import User, UserNotFoundError
 
 USERS: dict[int, User] = {}
 
@@ -10,7 +10,10 @@ def create_user(id: int, first_name: str, last_name: str, email: str) -> User:
 
 
 def get_user(user_id: int) -> User:
-    return USERS[user_id]
+    user = USERS.get(user_id)
+    if user is None:
+        raise UserNotFoundError(user_id)
+    return user
 
 
 def get_display_name(user: User) -> str:

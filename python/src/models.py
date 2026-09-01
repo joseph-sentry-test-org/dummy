@@ -1,6 +1,17 @@
 from dataclasses import dataclass, field
 
 
+class UserNotFoundError(KeyError):
+    """Raised when a user ID is not found in the user store."""
+
+    def __init__(self, user_id: int):
+        super().__init__(user_id)
+        self.user_id = user_id
+
+    def __str__(self):
+        return f"User {self.user_id} not found"
+
+
 @dataclass
 class User:
     id: int

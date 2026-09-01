@@ -57,9 +57,9 @@ def get_highest_priority_task(project_id: int) -> Task:
 
 def bulk_reassign(from_user_id: int, to_user_id: int, project_id: int) -> list[Task]:
     """Reassign all tasks from one user to another within a project."""
-    from src.user_service import USERS
+    from src.user_service import get_user
 
-    target_user = USERS[to_user_id]
+    target_user = get_user(to_user_id)
     if not target_user.is_active:
         raise ValueError(f"Cannot assign to inactive user {to_user_id}")
 
