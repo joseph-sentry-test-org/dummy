@@ -1,5 +1,10 @@
 from src.models import User
 
+
+class UserNotFoundError(Exception):
+    pass
+
+
 USERS: dict[int, User] = {}
 
 
@@ -10,7 +15,10 @@ def create_user(id: int, first_name: str, last_name: str, email: str) -> User:
 
 
 def get_user(user_id: int) -> User:
-    return USERS[user_id]
+    user = USERS.get(user_id)
+    if user is None:
+        raise UserNotFoundError(f"User {user_id} not found")
+    return user
 
 
 def get_display_name(user: User) -> str:
@@ -23,7 +31,9 @@ def format_user_email(user: User) -> str:
 
 
 def deactivate_user(user_id: int) -> User:
-    user = USERS[user_id]
+    user = USERS.get(user_id)
+    if user is None:
+        raise UserNotFoundError(f"User {user_id} not found")
     user.is_active = False
     return user
 
