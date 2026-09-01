@@ -4,6 +4,8 @@ USERS: dict[int, User] = {}
 
 
 def create_user(id: int, first_name: str, last_name: str, email: str) -> User:
+    if "@" not in email:
+        raise ValueError(f"Invalid email address: '{email}' must contain '@'")
     user = User(id=id, first_name=first_name, last_name=last_name, email=email)
     USERS[id] = user
     return user
@@ -18,7 +20,10 @@ def get_display_name(user: User) -> str:
 
 
 def format_user_email(user: User) -> str:
-    name, domain = user.email.split("@")
+    parts = user.email.split("@", 1)
+    if len(parts) != 2:
+        raise ValueError(f"Invalid email address: '{user.email}' must contain '@'")
+    name, domain = parts
     return f"{name} ({domain})"
 
 
