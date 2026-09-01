@@ -38,6 +38,24 @@ def deactivate_user(user_id: int) -> User:
     return user
 
 
+def update_user(
+    user_id: int,
+    first_name: str | None = None,
+    last_name: str | None = None,
+    email: str | None = None,
+) -> User:
+    user = USERS.get(user_id)
+    if user is None:
+        raise UserNotFoundError(f"User {user_id} not found")
+    if first_name is not None:
+        user.first_name = first_name
+    if last_name is not None:
+        user.last_name = last_name
+    if email is not None:
+        user.email = email
+    return user
+
+
 def get_active_users() -> list[User]:
     return [u for u in USERS.values() if u.is_active]
 
